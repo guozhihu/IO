@@ -60,70 +60,34 @@ public class TestChannel {
     
     // 利用通道完成文件的复制（非直接缓冲区）
     @Test
-    public void test1() {
+    public void test1() throws IOException {
         long start = System.currentTimeMillis();
         // 读入流
-        FileInputStream fis = null;
+        FileInputStream fis = new FileInputStream("d:/1.mkv");
         // 写入流
-        FileOutputStream fos = null;
+        FileOutputStream fos = new FileOutputStream("d:/2.mkv");
+        // ①获取通道
+        FileChannel inChannel = fis.getChannel();
+        FileChannel outChannel = fos.getChannel();
         
-        FileChannel inChannel = null;
-        FileChannel outChannel = null;
+        // ②分配指定大小的缓冲区
+        ByteBuffer buf = ByteBuffer.allocate(1024);
         
-        try {
-            fis = new FileInputStream("d:/1.mkv");
-            fos = new FileOutputStream("d:/2.mkv");
-            // ①获取通道
-            inChannel = fis.getChannel();
-            outChannel = fos.getChannel();
-            
-            // ②分配指定大小的缓冲区
-            ByteBuffer buf = ByteBuffer.allocate(1024);
-            
-            // ③将通道中的数据存入缓冲区中
-            while (inChannel.read(buf) != -1) {
-                // 切换读取数据的模式
-                buf.flip();
-                // ④将缓冲区中的数据写入通道中
-                outChannel.write(buf);
-                // 清空缓冲区
-                buf.clear();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally { // 关闭通道，关闭连接
-            if (outChannel != null) {
-                try {
-                    outChannel.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            
-            if (inChannel != null) {
-                try {
-                    inChannel.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        // ③将通道中的数据存入缓冲区中
+        while (inChannel.read(buf) != -1) {
+            // 切换读取数据的模式
+            buf.flip();
+            // ④将缓冲区中的数据写入通道中
+            outChannel.write(buf);
+            // 清空缓冲区
+            buf.clear();
         }
+        
+        // 关闭通道、关闭连接
+        outChannel.close();
+        inChannel.close();
+        fos.close();
+        fis.close();
         
         long end = System.currentTimeMillis();
         System.out.println("操作非直接缓冲区耗费时间为：" + (end - start));
